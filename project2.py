@@ -40,14 +40,14 @@ def bfs_visited(ugraph, start_node):
     
 def cc_visited(ugraph):
     """
-    Inputs
+    Input
         ugraph: undirected graph represented as an adjacency list
     Output
         list of sets of nodes in a connected component
     """
     # initialize
     remaining_nodes = ugraph.keys()
-    connected_components = list()
+    connected_components = []
     
     while remaining_nodes:
         node = remaining_nodes[0]
@@ -57,14 +57,45 @@ def cc_visited(ugraph):
             remaining_nodes.remove(visited_node)
             
     return connected_components
+
+def largest_cc_size(ugraph):
+    """
+    Input
+        ugraph: undirected graph represented as an adjacency list
+    Output
+        integer representing the size (number of nodes) 
+        of the largest connected component in ugraph.
+    """
+    if ugraph:
+        return max([len(cc) for cc in cc_visited(ugraph)])
+    else:
+        return 0
+
+def compute_resilience(ugraph, attack_order):
+    """
+    Inputs
+        ugraph: undirected graph represented as an adjacency list
+        attack_order: a list of nodes in ugraph
+    Output
+        list whose k + 1th entry is the size of the largest connected
+        component in the graph after the removal of the first k nodes in
+        attack_order. The first entry is the size of the largest connected
+        component in ugraph.
+        
+        For each node in attack_order, the function removes the given node
+        and its edges from the graph and then computes the size of the 
+        largest connected component for the resulting graph.
+    """
+    # initialize
+    resilience = [largest_cc_size(ugraph)]
     
-### TESTING ###
-#EX_GRAPH = {0: set([1, 4, 5]), 
-#1: set([0, 2, 5]), 
-#2: set([1, 3, 5]), 
-#3: set([0, 2]), 
-#4: set([1]), 
-#5: set([0, 1, 2]),
-#6: set([])}
-#
-#print cc_visited(EX_GRAPH)
+    for node in attack_order:
+        if node in ugraph.keys():
+            for edge in ugraph[node]:
+                ugraph[edge].remove(node)
+            del ugraph[node]
+            resilience.append(largest_cc_size(ugraph))
+        else:
+            print 'error: node ', node, ' not in graph.'
+        
+    return resilience
