@@ -90,11 +90,19 @@ def compute_resilience(ugraph, attack_order):
     resilience = [largest_cc_size(ugraph)]
     
     for node in attack_order:
+        # check that node exists
         if node in ugraph.keys():
+            
+            # remove all edges to ith node
             for edge in ugraph[node]:
                 ugraph[edge].remove(node)
+            
+            # remove ith node
             del ugraph[node]
+            
+            # add largest remaining cc to resilience list
             resilience.append(largest_cc_size(ugraph))
+        
         else:
             print 'error: node ', node, ' not in graph.'
         
