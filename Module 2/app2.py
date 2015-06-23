@@ -370,3 +370,44 @@ def make_graphs():
     upa_ugraph = upa(len(network), int(math.ceil(degree_bar)))   # 3697 edges
     
     return network, er_ugraph, upa_ugraph
+    
+def random_order(graph):
+    """Takes a graph, and returns a list of its nodes in random order."""
+    order = list(graph.keys())
+    random.shuffle(order)
+    return order
+    
+def question1(network, er_ugraph, upa_ugraph):
+    """Compute resilience of three graphs, and plot the outcome"""
+    
+    # network    
+    order_net = random_order(network)
+    resilience_net = compute_resilience(network, order_net)
+    
+    # er
+    order_er = random_order(er_ugraph)
+    resilience_er = compute_resilience(er_ugraph, order_er)
+    
+    # upa
+    order_upa = random_order(upa_ugraph)
+    resilience_upa = compute_resilience(upa_ugraph, order_upa)
+    
+    # plot
+    nodes = range(len(order_net) + 1)
+    
+    plt.plot(nodes, resilience_net, 'k-', label='computer network')
+    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
+    plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
+    plt.legend()
+    plt.xlabel('Number of Nodes Removed from Network')
+    plt.ylabel('Size of Largest Connected Component')
+    plt.title('Network Resilience Under Random Attack')
+    plt.show()
+            
+def run():
+    """Run the analysis"""
+    network, er_ugraph, upa_ugraph = make_graphs()
+    
+    question1(network, er_ugraph, upa_ugraph)
+    
+run()
