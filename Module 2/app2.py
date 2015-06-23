@@ -94,6 +94,8 @@ def targeted_order(ugraph):
     Compute a targeted attack order consisting
     of nodes of maximal degree
     
+    O(n^2)
+    
     Returns:
     A list of nodes
     """
@@ -308,38 +310,16 @@ def upa(n, m):
 # Analysis Questions
 
 """
-Question 1 (5 pts)
+Question 1
 
-To begin our analysis, we will examine the resilience of the computer 
-network under an attack in which servers are chosen at random. We will then
-compare theresilience of the network to the resilience of ER and UPA graphs 
-of similar size.
-
-To begin, you should determine the probability p such that the ER graph 
-computed using this edge probability has approximately the same number of 
-edges as the computer network. (Your choice for p should be consistent with 
-considering each edge in the undirected graph exactly once, not twice.) 
-Likewise, you should compute an integer m such that the number of edges in 
-the UPA graph is close to the number of edges in the computer network. 
-Remember that all three graphs being analyzed in this Application should 
-have the same number of nodes and approximately the same number of edges.
-
-Next, you should write a function random_order that takes a graph and 
-returns a list of the nodes in the graph in some random order. Then, for 
-each of the three graphs (computer network, ER, UPA), compute a random 
-attack order using ranDdom_order and use this attack order in 
-compute_resilience to compute the resilience of the graph.
-
-Once you have computed the resilience for all three graphs, plot the 
-results as three curves combined in a single plot. (Use a line plot for 
-each curve.) The horizontal axis for your single plot be the the number of 
-nodes removed (ranging from zero to the number of nodes in the graph) while
-the vertical axis should be the size of the largest connect component in 
-the graphs resulting from the node removal. For this question (and others) 
-involving multiple curves in a single plot, please include a legend in your 
-plot that distinguishes the three curves. The text labels in this legend 
-should include the values for p and m that you used in computing the ER and 
-UPA graphs, respectively.
+- determine probability p of ER graph that gives the same number of edges and
+  nodes as the computer network.
+- determine integer m for a UPA graph that gives the same number of edges and
+  nodes as the computer network.
+- write function random_order(ugraph)
+- compute resilience of each of three networks under random attack order.
+- Plot resilience, and determine resilience over first 20% of nodes removed
+  for eacch plot.
 """
 
 def make_graphs():
@@ -398,6 +378,7 @@ def question1(network, er_ugraph, upa_ugraph):
     size75pct = [int(0.75 * (len(order_net) - node)) for node in first20pct]
     
     # plot
+    plt.figure()
     plt.plot(nodes, resilience_net, 'k-', label='computer network')
     plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
     plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
@@ -407,11 +388,101 @@ def question1(network, er_ugraph, upa_ugraph):
     plt.ylabel('Size of Largest Connected Component')
     plt.title('Network Resilience Under Random Attack')
     plt.show()
-            
+    
+    return None
+
+"""
+Question 3
+
+- implement fast_targeted_order(ugraph)
+- analyze mathematically and empirically the running times of 
+  targeted_order() and fast_targeted_order()
+"""    
+
+def fast_targeted_order(ugraph):
+    """
+    Compute a targeted attack order consisting
+    of nodes of maximal degree.
+    
+    O(n) time rather than O(n^2)
+    
+    Returns:
+    A list of nodes
+    """
+    # copy the graph
+    new_graph = copy_graph(ugraph)
+    
+    order = []
+    num_nodes = len(ugraph)
+    degree_sets = [set() for node in new_graph.keys()]
+    distribution = {}
+
+    for node, edge in new_graph.items():
+        if len(edge) not in distribution:
+            distribution[len(edge)] = set([node])
+        else:
+            distribution[len(edge)].add(node)
+
+    for degree in range(num_nodes):
+        if degree in distribution:
+            degree_sets[degree] = distribution[degree]
+
+    for degree in range(num_nodes-1, -1, -1):
+        while len(degree_sets[degree]) > 0:
+            max_node = degree_sets[degree].pop()
+
+            for neighbor in new_graph[max_node]:
+                neighbor_deg = len(new_graph[neighbor])
+                degree_sets[neighbor_deg].remove(neighbor)
+                degree_sets[neighbor_deg-1].add(neighbor)
+
+            order.append(max_node)
+            delete_node(new_graph, max_node)
+
+    return order
+    
+def timer(func):
+    """timer function for comparing running times of functions for building
+    targeted orders. Returns a list of time intervals."""
+    delta_t = []
+    M = 5
+
+    for n in range(10, 1000, 10):
+        upa_ugraph = upa(n, M)
+        initial = time.clock()
+        func(upa_ugraph)
+        final = time.clock()
+        delta_t.append(final - initial)
+
+    return delta_t
+
+def question3():
+    """plot running time comparisons"""
+    # get running times
+    random.seed(912)
+    n = range(10, 1000, 10)
+    basic = timer(targeted_order)
+    fast = timer(fast_targeted_order)
+    
+    # plot
+    plt.figure()
+    plt.plot(n, basic, 'c-', label='targeted_order')
+    plt.plot(n, fast, 'm-', label='fast_targeted_order')
+    plt.legend(loc='upper left')
+    plt.xlabel('Number of Nodes in UPA Graph')
+    plt.ylabel('Running Time (s)')
+    plt.title('Comparison of Running Times on Desktop Python')
+    plt.show()
+    
+    return None
+
 def run():
     """Run the analysis"""
     network, er_ugraph, upa_ugraph = make_graphs()
     
     question1(network, er_ugraph, upa_ugraph)
+    question3()
+    
+    return None
     
 run()
