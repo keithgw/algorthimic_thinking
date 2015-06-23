@@ -392,12 +392,16 @@ def question1(network, er_ugraph, upa_ugraph):
     order_upa = random_order(upa_ugraph)
     resilience_upa = compute_resilience(upa_ugraph, order_upa)
     
-    # plot
+    # plot arrays for analysis questions
     nodes = range(len(order_net) + 1)
+    first20pct = range(int(0.2 * nodes[-1]))
+    size75pct = [int(0.75 * (len(order_net) - node)) for node in first20pct]
     
+    # plot
     plt.plot(nodes, resilience_net, 'k-', label='computer network')
     plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
     plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
+    plt.plot(first20pct, size75pct, 'r--', label='75% of num nodes')
     plt.legend()
     plt.xlabel('Number of Nodes Removed from Network')
     plt.ylabel('Size of Largest Connected Component')
