@@ -11,7 +11,9 @@ Keith G. Williams
 import urllib2
 import random
 import time
+import gc
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 from collections import deque
 
@@ -446,7 +448,8 @@ def timer(func):
     targeted orders. Returns a list of time intervals."""
     delta_t = []
     M = 5
-
+    
+    gc.disable() # disable garbage collector for uninterupted timing    
     for n in range(10, 1000, 10):
         upa_ugraph = upa(n, M)
         initial = time.clock()
@@ -454,15 +457,25 @@ def timer(func):
         final = time.clock()
         delta_t.append(final - initial)
 
+    gc.enable() # turn garbage collector back on
     return delta_t
 
 def question3():
     """plot running time comparisons"""
     # get running times
     random.seed(912)
+    
+    # run 10 trials, and take the median time for each n to smooth data
+    basic_trials = np.zeros((10, 99))
+    fast_trials = np.zeros((10, 99))
+    for i in range(10):
+        basic_trials[i,:] = timer(targeted_order)
+        fast_trials[i,:] = timer(fast_targeted_order)
+        
+    basic = np.median(basic_trials, 0)
+    fast = np.median(fast_trials, 0)
+    
     n = range(10, 1000, 10)
-    basic = timer(targeted_order)
-    fast = timer(fast_targeted_order)
     
     # plot
     plt.figure()
@@ -470,7 +483,7 @@ def question3():
     plt.plot(n, fast, 'm-', label='fast_targeted_order')
     plt.legend(loc='upper left')
     plt.xlabel('Number of Nodes in UPA Graph')
-    plt.ylabel('Running Time (s)')
+    plt.ylabel('Median Running Time (s), 10 trials')
     plt.title('Comparison of Running Times on Desktop Python')
     plt.show()
     
