@@ -321,7 +321,7 @@ Question 1
 - write function random_order(ugraph)
 - compute resilience of each of three networks under random attack order.
 - Plot resilience, and determine resilience over first 20% of nodes removed
-  for eacch plot.
+  for each plot.
 """
 
 def make_graphs():
@@ -360,7 +360,8 @@ def random_order(graph):
     return order
     
 def question1(network, er_ugraph, upa_ugraph):
-    """Compute resilience of three graphs, and plot the outcome"""
+    """Compute resilience of three graphs under random attack, 
+    and plot the outcome"""
     
     # network    
     order_net = random_order(network)
@@ -384,7 +385,7 @@ def question1(network, er_ugraph, upa_ugraph):
     plt.plot(nodes, resilience_net, 'k-', label='computer network')
     plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
     plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
-    plt.plot(first20pct, size75pct, 'r--', label='75% of num nodes')
+    plt.plot(first20pct, size75pct, 'r--', label='75% of remaining nodes')
     plt.legend()
     plt.xlabel('Number of Nodes Removed from Network')
     plt.ylabel('Size of Largest Connected Component')
@@ -480,12 +481,59 @@ def question3():
     
     return None
 
+"""
+Question 4
+
+- Create a targeted attack order for each of the Computer Network, ER, and UPA
+  graphs.
+- Compute the resilience of each graph under targeted attack.
+- Plot the resilience of each graph under targeted atatck.
+- Use a 75% of remaining nodes threshold over the first 20% of nodes removed 
+  to determine if a graph is resilient under targeted attack.D
+"""
+
+def question4(network, er_ugraph, upa_ugraph):
+    """Compute resilience of three graphs under targeted attack, 
+    and plot the outcome"""
+    
+    # network    
+    order_net = fast_targeted_order(network)
+    resilience_net = compute_resilience(network, order_net)
+    
+    # ER
+    order_er = fast_targeted_order(er_ugraph)
+    resilience_er = compute_resilience(er_ugraph, order_er)
+    
+    # UPA
+    order_upa = fast_targeted_order(upa_ugraph)
+    resilience_upa = compute_resilience(upa_ugraph, order_upa)
+    
+    # plot arrays for analysis questions
+    nodes = range(len(order_net) + 1)
+    first20pct = range(int(0.2 * nodes[-1]))
+    size75pct = [int(0.75 * (len(order_net) - node)) for node in first20pct]
+    
+    # plot
+    plt.figure()
+    plt.plot(nodes, resilience_net, 'k-', label='computer network')
+    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
+    plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
+    plt.plot(first20pct, size75pct, 'r--', label='75% of remaining nodes')
+    plt.legend()
+    plt.xlabel('Number of Nodes Removed from Network')
+    plt.ylabel('Size of Largest Connected Component')
+    plt.title('Network Resilience Under Targeted Attack')
+    plt.show()
+    
+    return None
+
 def run():
     """Run the analysis"""
     network, er_ugraph, upa_ugraph = make_graphs()
     
-    question1(network, er_ugraph, upa_ugraph)
-    question3()
+    #question1(network, er_ugraph, upa_ugraph)
+    #question3()
+    question4(network, er_ugraph, upa_ugraph)
     
     return None
     
