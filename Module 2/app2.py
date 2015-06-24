@@ -414,35 +414,26 @@ def fast_targeted_order(ugraph):
     # copy the graph
     new_graph = copy_graph(ugraph)
     
-    order = []
-    num_nodes = len(ugraph)
-    degree_sets = [set() for node in new_graph.keys()]
-    distribution = {}
-
-    for node, edge in new_graph.items():
-        if len(edge) not in distribution:
-            distribution[len(edge)] = set([node])
-        else:
-            distribution[len(edge)].add(node)
-
-    for degree in range(num_nodes):
-        if degree in distribution:
-            degree_sets[degree] = distribution[degree]
-
-    for degree in range(num_nodes-1, -1, -1):
-        while len(degree_sets[degree]) > 0:
-            max_node = degree_sets[degree].pop()
-
-            for neighbor in new_graph[max_node]:
-                neighbor_deg = len(new_graph[neighbor])
-                degree_sets[neighbor_deg].remove(neighbor)
-                degree_sets[neighbor_deg-1].add(neighbor)
-
-            order.append(max_node)
-            delete_node(new_graph, max_node)
-
-    return order
+    # initialize degree_sets (max degree is n-1)
+    degree_sets = [set() for deg in range(len(ugraph))]
     
+    for node in new_graph.keys():
+        degree = len(new_graph[node])
+        degree_sets[degree].add(node)
+        
+    order = []
+    for k in range(len(new_graph) -1, -1, -1):
+        while len(degree_sets[k]) > 0:
+            u = degree_sets[k].pop()
+            for neighbor in new_graph[u]:
+                d = len(new_graph[neighbor])
+                degree_sets[d].remove(neighbor)
+                degree_sets[d-1].add(neighbor)
+            order.append(u)
+            delete_node(new_graph, u)
+    
+    return order    
+          
 def timer(func):
     """timer function for comparing running times of functions for building
     targeted orders. Returns a list of time intervals."""
