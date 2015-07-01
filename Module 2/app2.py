@@ -343,11 +343,11 @@ def make_graphs():
     prob_er = 2 * degree_bar / (len(network) - 1)   # p = 0.00397
     
     # create ER graph with same number of nodes and edges as computer network
-    # n = 1239, p = 0.002
+    # n = 1239, p = 0.004
     er_ugraph = gen_er_ugraph(len(network), prob_er)  # 3037 edges
     
     # create upa graph with same number of nodes and edges as computer network
-    # n = 1239, m = 3D
+    # n = 1239, m = 3
     upa_ugraph = upa(len(network), int(math.ceil(degree_bar)))   # 3697 edges
     
     return network, er_ugraph, upa_ugraph
