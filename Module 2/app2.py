@@ -261,14 +261,13 @@ def gen_er_ugraph(n, p):
             # loop over each potential adjacent node
             if node not in ugraph:
                 ugraph[node] = set()
-            for neighbor in range(0, n):
-                if neighbor != node:             # no self-loops
-                    if neighbor not in ugraph:
-                        ugraph[neighbor] = set()
-                    a = random.random()
-                    if a < p:
-                        ugraph[node].add(neighbor)
-                        ugraph[neighbor].add(node)
+            for neighbor in range(node + 1, n):
+                if neighbor not in ugraph:
+                    ugraph[neighbor] = set()
+                a = random.random()
+                if a < p:
+                    ugraph[node].add(neighbor)
+                    ugraph[neighbor].add(node)
         return ugraph
 
 def make_complete_ugraph(num_nodes):
@@ -340,15 +339,15 @@ def make_graphs():
     degree_bar = num_edges / len(network)
     
     # calculate p for ER graph that will have num_edges (approximately 3047)
-    # E(edges) = n * p, therefore p = E(edges) / n
-    prob_er = degree_bar / len(network)   # p = 0.00198
+    # E(edges) = 0.5(n - 1) * p, therefore p = 2 * E(edges) / (n - 1)
+    prob_er = 2 * degree_bar / (len(network) - 1)   # p = 0.00397
     
     # create ER graph with same number of nodes and edges as computer network
     # n = 1239, p = 0.002
-    er_ugraph = gen_er_ugraph(len(network), prob_er)  # 3046 edges
+    er_ugraph = gen_er_ugraph(len(network), prob_er)  # 3037 edges
     
     # create upa graph with same number of nodes and edges as computer network
-    # n = 1239, m = 3
+    # n = 1239, m = 3D
     upa_ugraph = upa(len(network), int(math.ceil(degree_bar)))   # 3697 edges
     
     return network, er_ugraph, upa_ugraph
@@ -383,7 +382,7 @@ def question1(network, er_ugraph, upa_ugraph):
     # plot
     plt.figure()
     plt.plot(nodes, resilience_net, 'k-', label='computer network')
-    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
+    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.004')
     plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
     plt.plot(first20pct, size75pct, 'r--', label='75% of remaining nodes')
     plt.legend()
@@ -516,7 +515,7 @@ def question4(network, er_ugraph, upa_ugraph):
     # plot
     plt.figure()
     plt.plot(nodes, resilience_net, 'k-', label='computer network')
-    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.002')
+    plt.plot(nodes, resilience_er, 'm-', label='ER, p = 0.004')
     plt.plot(nodes, resilience_upa, 'c-', label='UPA, m = 3')
     plt.plot(first20pct, size75pct, 'r--', label='75% of remaining nodes')
     plt.legend()
@@ -531,8 +530,8 @@ def run():
     """Run the analysis"""
     network, er_ugraph, upa_ugraph = make_graphs()
     
-    #question1(network, er_ugraph, upa_ugraph)
-    #question3()
+    question1(network, er_ugraph, upa_ugraph)
+    question3()
     question4(network, er_ugraph, upa_ugraph)
     
     return None
