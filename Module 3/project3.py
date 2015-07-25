@@ -201,7 +201,7 @@ def hierarchical_clustering(cluster_list, num_clusters):
     Output: List of clusters whose length is num_clusters
     """
     
-    new_cluster_list = cluster_list[:]
+    new_cluster_list = list(cluster_list)
 
     while len(new_cluster_list) > num_clusters:
         _, node1, node2 = fast_closest_pair(new_cluster_list)

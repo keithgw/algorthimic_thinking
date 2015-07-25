@@ -14,6 +14,8 @@ import math
 import random
 import urllib2
 import alg_cluster
+import numpy as np
+import matplotlib.pyplot as plt
 
 # conditional imports
 if DESKTOP:
@@ -80,6 +82,15 @@ def sequential_clustering(singleton_list, num_clusters):
             
     return cluster_list
                 
+#####################################################################
+# Code to compute the distortion of the results of a clustering
+def compute_distortion(cluster_list, data_table):
+    """
+    Inputs: cluster list, data table from which the cluster list was computed
+    Output: distortion (float) is the sum of the weighted sums of the
+        squared errors for each cluster.
+    """
+    return sum([cluster.cluster_error(data_table) for cluster in cluster_list])
 
 #####################################################################
 # Code to load cancer data, compute a clustering and 
@@ -93,21 +104,27 @@ def run_example():
 
     Set DESKTOP = True/False to use either matplotlib or simplegui
     """
-    data_table = load_data_table(DATA_3108_URL)
-    
+    #data_table = load_data_table(DATA_3108_URL)
+    #data_table = load_data_table(DATA_896_URL)
+    #data_table = load_data_table(DATA_290_URL)
+    data_table = load_data_table(DATA_111_URL)
+        
     singleton_list = []
     for line in data_table:
         singleton_list.append(alg_cluster.Cluster(set([line[0]]), line[1], line[2], line[3], line[4]))
-        
+
+    ### 3 methods for clustering, uncomment the one asked for ###    
+                
     #cluster_list = sequential_clustering(singleton_list, 15)	
     #print "Displaying", len(cluster_list), "sequential clusters"
 
-    cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
-    print "Displaying", len(cluster_list), "hierarchical clusters"
+    #cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
+    #print "Displaying", len(cluster_list), "hierarchical clusters"
+    #print "Distortion:", compute_distortion(cluster_list, data_table)
 
-    #cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, 9, 5)	
-    #print "Displaying", len(cluster_list), "k-means clusters"
-
+    cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, 9, 5)	
+    print "Displaying", len(cluster_list), "k-means clusters"
+    print "Distortion:", compute_distortion(cluster_list, data_table)
             
     # draw the clusters using matplotlib or simplegui
     if DESKTOP:
@@ -116,4 +133,44 @@ def run_example():
     else:
         alg_clusters_simplegui.PlotClusters(data_table, cluster_list)   # use toggle in GUI to add cluster centers
     
-run_example()
+#run_example()
+
+def compute_distortions():
+    data_urls = [DATA_111_URL, DATA_290_URL, DATA_896_URL]
+    data_tables = [load_data_table(url) for url in data_urls]
+    
+    distortions = np.zeros((3, 15, 2))
+    for i in range(3):
+        for j in range(15):
+            singletons = [alg_cluster.Cluster(set([line[0]]), line[1], line[2], line[3], line[4]) for line in data_tables[i]]
+            nclust = j + 6
+            
+            # kmeans
+            kclst = alg_project3_solution.kmeans_clustering(singletons, nclust, 5)
+            distortions[i, j, 0] = compute_distortion(kclst, data_tables[i])
+            
+            # hclust
+            hclst = alg_project3_solution.hierarchical_clustering(singletons, nclust)
+            distortions[i, j, 1] = compute_distortion(hclst, data_tables[i])
+                        
+    return distortions              
+    
+distortions = compute_distortions()
+
+def q10(distortions):
+    nclust = range(6, 21)
+    titles = ['111 Counties', '290 Counties', '896 Counties']
+    
+    plt.figure()
+    for i in range(3):
+        plt.subplot(3, 1, i + 1)
+        plt.plot(nclust, distortions[i, :, 0], 'm-', label='k-means')
+        plt.plot(nclust, distortions[i, :, 1], 'c-', label='hierarchical')
+        plt.legend(loc='best', fontsize='small')
+        plt.xlabel('Number of Output Clusters')
+        plt.ylabel('Distortion')
+        plt.title(titles[i])
+    
+    plt.show()
+
+q10(distortions)
