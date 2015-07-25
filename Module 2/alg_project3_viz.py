@@ -17,7 +17,7 @@ import alg_cluster
 
 # conditional imports
 if DESKTOP:
-    import project2 as alg_project3_solution      # desktop project solution
+    import project3 as alg_project3_solution      # desktop project solution
     import alg_clusters_matplotlib
 else:
     #import userXX_XXXXXXXX as alg_project3_solution   # CodeSkulptor project solution
@@ -99,11 +99,11 @@ def run_example():
     for line in data_table:
         singleton_list.append(alg_cluster.Cluster(set([line[0]]), line[1], line[2], line[3], line[4]))
         
-    cluster_list = sequential_clustering(singleton_list, 15)	
-    print "Displaying", len(cluster_list), "sequential clusters"
+    #cluster_list = sequential_clustering(singleton_list, 15)	
+    #print "Displaying", len(cluster_list), "sequential clusters"
 
-    #cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
-    #print "Displaying", len(cluster_list), "hierarchical clusters"
+    cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
+    print "Displaying", len(cluster_list), "hierarchical clusters"
 
     #cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, 9, 5)	
     #print "Displaying", len(cluster_list), "k-means clusters"
@@ -111,8 +111,8 @@ def run_example():
             
     # draw the clusters using matplotlib or simplegui
     if DESKTOP:
-        alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, False)
-        #alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, True)  #add cluster centers
+        #alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, False)
+        alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, True)  #add cluster centers
     else:
         alg_clusters_simplegui.PlotClusters(data_table, cluster_list)   # use toggle in GUI to add cluster centers
     
