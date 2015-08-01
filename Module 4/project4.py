@@ -80,3 +80,44 @@ def compute_alignment_matrix(seq_x, seq_y, scoring_matrix, global_flag=True):
     
     return alignment_matrix
     
+def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
+    """
+    Inputs:
+        seq_x, seq_y: two character strings that share a common alphabet 
+        with scoring_matrix
+        scoring_matrix: output of build_scoring_matrix. Dictionary of 
+            dictionaries whose [seq_x[i]][seq_y[j]] value is the score of the
+            alignment of seq_x[i], seq_y[i].
+        alignment_matrix: A matrix whose ith, jth element is the maximum score 
+        for the alignment of the first i-1, j-1 elements of seq_x, seq_y.
+    Outputs:
+        a tuple (score, align_x, align_y), where score is the score of the 
+        global alignment of align_x and align_y    
+    """
+    xdx, ydx = len(seq_x), len(seq_y)
+    align_x, align_y = '', ''
+    
+    while xdx != 0 and ydx != 0:
+        if alignment_matrix[xdx][ydx] == alignment_matrix[xdx - 1][ydx - 1] + scoring_matrix[seq_x[xdx - 1]][seq_y[ydx - 1]]:
+            align_x = seq_x[xdx - 1] + align_x
+            align_y = seq_y[ydx - 1] + align_y
+            xdx -= 1
+            ydx -= 1
+        elif alignment_matrix[xdx][ydx] == alignment_matrix[xdx -1][ydx] + scoring_matrix[seq_x[xdx -1]]['-']:
+            align_x = seq_x[xdx - 1] + align_x
+            align_y = '-' + align_y
+            xdx -= 1
+        else:
+            align_x = '-' + align_x
+            align_y = seq_y[ydx - 1] + align_y
+            ydx -= 1
+    while xdx != 0:
+        align_x = seq_x[xdx - 1] + align_x
+        align_y = '-' + align_y
+        xdx -= 1
+    while ydx != 0:
+        align_x = '-' + align_x
+        align_y = seq_y[ydx - 1] + align_y
+        ydx -=1
+        
+    return (alignment_matrix[len(seq_x)][len(seq_y)], align_x, align_y)
