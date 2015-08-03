@@ -13,8 +13,10 @@ def build_scoring_matrix(alphabet, diag_score, off_diag_score, dash_score):
         A dictionary of dictionaries indexed by members of alphabet + '-',
         whose value = score for the alignment of the keys.
     """
-    
+    # initialize dictionary of dictionaries
     scoring_matrix = {'-': {'-': dash_score}}
+    
+    # loop over each letter and assign score
     for letter in alphabet:
         scoring_matrix['-'][letter] = dash_score
         scoring_matrix[letter] = {}
@@ -94,9 +96,11 @@ def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
         a tuple (score, align_x, align_y), where score is the score of the 
         global alignment of align_x and align_y    
     """
+    # initialize
     xdx, ydx = len(seq_x), len(seq_y)
     align_x, align_y = '', ''
     
+    # traceback from bottom-right to top-left of alignment_matrix
     while xdx != 0 and ydx != 0:
         if alignment_matrix[xdx][ydx] == alignment_matrix[xdx - 1][ydx - 1] + scoring_matrix[seq_x[xdx - 1]][seq_y[ydx - 1]]:
             align_x = seq_x[xdx - 1] + align_x
@@ -111,13 +115,92 @@ def compute_global_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
             align_x = '-' + align_x
             align_y = seq_y[ydx - 1] + align_y
             ydx -= 1
+    
+    # if left border reached
     while xdx != 0:
         align_x = seq_x[xdx - 1] + align_x
         align_y = '-' + align_y
         xdx -= 1
+    
+    # if top border reached
     while ydx != 0:
         align_x = '-' + align_x
         align_y = seq_y[ydx - 1] + align_y
         ydx -=1
         
     return (alignment_matrix[len(seq_x)][len(seq_y)], align_x, align_y)
+    
+def find_max_score(alignment_matrix):
+    """
+    helper function to find the maximum score in an alignment matrix.
+    returns tuple (score, startx, starty) that is the value of the max score,
+    and indices where the max score is located.
+    """
+    max_score = 0
+    startx = len(alignment_matrix) - 1
+    starty = len(alignment_matrix[0]) - 1
+    for idx in range(startx, -1, -1):
+        for jdx in range(starty, -1, -1):
+            if alignment_matrix[idx][jdx] > max_score:
+                max_score = alignment_matrix[idx][jdx]
+                startx = idx
+                starty = jdx
+                
+    return(max_score, startx, starty)
+    
+def compute_local_alignment(seq_x, seq_y, scoring_matrix, alignment_matrix):
+    """
+    Inputs:
+        seq_x, seq_y: two character strings that share a common alphabet 
+        with scoring_matrix
+        scoring_matrix: output of build_scoring_matrix. Dictionary of 
+            dictionaries whose [seq_x[i]][seq_y[j]] value is the score of the
+            alignment of seq_x[i], seq_y[i].
+        alignment_matrix: A matrix whose ith, jth element is the maximum score 
+        for the alignment of the first i-1, j-1 elements of seq_x, seq_y.
+    Outputs:
+        a tuple (score, align_x, align_y), where score is the score of the 
+        local alignment of align_x and align_y    
+    """
+    # find max score in alignment_matrix, and record indices
+    max_score, startx, starty = find_max_score(alignment_matrix)
+                
+    # traceback from max score until first 0 encountered
+    xdx, ydx = startx, starty
+    align_x, align_y = '', ''
+    while xdx != 0 and ydx != 0:
+        if alignment_matrix[xdx][ydx] == 0:
+            break
+        elif alignment_matrix[xdx][ydx] == alignment_matrix[xdx - 1][ydx - 1] + scoring_matrix[seq_x[xdx - 1]][seq_y[ydx - 1]]:
+            align_x = seq_x[xdx - 1] + align_x
+            align_y = seq_y[ydx - 1] + align_y
+            xdx -= 1
+            ydx -= 1
+        elif alignment_matrix[xdx][ydx] == alignment_matrix[xdx -1][ydx] + scoring_matrix[seq_x[xdx -1]]['-']:
+            align_x = seq_x[xdx - 1] + align_x
+            align_y = '-' + align_y
+            xdx -= 1
+        else:
+            align_x = '-' + align_x
+            align_y = seq_y[ydx - 1] + align_y
+            ydx -= 1
+            
+    # if left border reached
+    while xdx != 0:
+        if alignment_matrix[xdx][ydx] == 0:
+            break
+        else:
+            align_x = seq_x[xdx - 1] + align_x
+            align_y = '-' + align_y
+            xdx -= 1
+    
+    # if top border reached
+    while ydx != 0:
+        if alignment_matrix[xdx][ydx] == 0:
+            break
+        else:
+            align_x = '-' + align_x
+            align_y = seq_y[ydx - 1] + align_y
+            ydx -=1
+            
+    return(max_score, align_x, align_y)
