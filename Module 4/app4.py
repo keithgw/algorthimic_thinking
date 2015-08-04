@@ -296,6 +296,7 @@ def run():
     pax_alignment = pax_domain(pam50, local_alignment)
     print "Question 2 \n"
     print 'Human/Pax Percent:', pax_alignment[0] * 100, '%'
+    print 'Drosophila/Pax Percent:', pax_alignment[1] * 100, '%'
     print '=' * 30
     
     # Question 4
